@@ -18,11 +18,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         view.findViewById<Button>(R.id.btnGoCloset).setOnClickListener {
-            findNavController().navigate(R.id.closetFragment)
+            findNavController().navigate(R.id.action_homeFragment_to_closetListFragment)
         }
 
         view.findViewById<Button>(R.id.btnGoOutfits).setOnClickListener {
-            findNavController().navigate(R.id.outfitsFragment)
+            findNavController().navigate(R.id.action_homeFragment_to_outfitListFragment)
         }
     }
 }

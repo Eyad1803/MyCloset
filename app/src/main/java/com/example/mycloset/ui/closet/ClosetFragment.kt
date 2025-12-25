@@ -13,11 +13,13 @@ class ClosetFragment : Fragment(R.layout.fragment_closet) {
         super.onViewCreated(view, savedInstanceState)
 
         view.findViewById<Button>(R.id.btnAddGarment).setOnClickListener {
-            findNavController().navigate(R.id.action_closet_to_addGarment)
+            // יעד שקיים אצלך ב-nav_graph.xml
+            findNavController().navigate(R.id.addItemFragment)
         }
 
         view.findViewById<Button>(R.id.btnCreateOutfit).setOnClickListener {
-            findNavController().navigate(R.id.action_closet_to_createOutfit)
+            // יעד שקיים אצלך ב-nav_graph.xml
+            findNavController().navigate(R.id.createOutfitFragment)
         }
     }
 }

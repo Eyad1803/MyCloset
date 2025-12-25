@@ -1,3 +1,4 @@
+
 package com.example.mycloset.ui.auth
 
 import android.os.Bundle
@@ -14,13 +15,11 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         super.onViewCreated(view, savedInstanceState)
 
         view.findViewById<Button>(R.id.btnLogin).setOnClickListener {
-            // מומלץ: Home (אם קיים ב-nav_graph)
-            // אם אין לך Home עדיין, החליפי ל-action_login_to_closet
-            findNavController().navigate(R.id.action_login_to_home)
+            findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
         }
 
         view.findViewById<TextView>(R.id.tvGoRegister).setOnClickListener {
-            findNavController().navigate(R.id.action_login_to_register)
+            findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
         }
     }
 }
