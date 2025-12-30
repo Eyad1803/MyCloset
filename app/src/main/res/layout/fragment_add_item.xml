@@ -24,13 +24,22 @@
             android:layout_height="200dp"
             android:scaleType="centerCrop"
             android:background="#FCE4EC"
-            android:contentDescription="Item image" />
+            android:contentDescription="@string/item_image_desc" />
+
+        <Button
+            android:id="@+id/btnTakePhoto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Take Photo (Camera)"
+            android:backgroundTint="#EC407A"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="10dp"/>
 
         <Button
             android:id="@+id/btnPickImage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Pick Image"
+            android:text="Pick Image (Gallery)"
             android:backgroundTint="#EC407A"
             android:textColor="#FFFFFF"
             android:layout_marginTop="10dp"/>

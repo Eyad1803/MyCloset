@@ -22,15 +22,19 @@ class ItemsListFragment : Fragment(R.layout.fragment_items_list) {
 
     private val adapter = ItemsAdapter { item ->
         Toast.makeText(requireContext(), "Clicked: ${item.name}", Toast.LENGTH_SHORT).show()
-        // בהמשך אפשר לנווט ל-ItemDetails אם תרצי
+        // אפשר בהמשך: ניווט ל-ItemDetails
     }
+
+    private lateinit var rv: RecyclerView
+    private lateinit var progress: ProgressBar
+    private lateinit var tvEmpty: TextView
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val rv = view.findViewById<RecyclerView>(R.id.rvItems)
-        val progress = view.findViewById<ProgressBar>(R.id.progressItems)
-        val tvEmpty = view.findViewById<TextView>(R.id.tvEmpty)
+        rv = view.findViewById(R.id.rvItems)
+        progress = view.findViewById(R.id.progressItems)
+        tvEmpty = view.findViewById(R.id.tvEmpty)
 
         rv.layoutManager = LinearLayoutManager(requireContext())
         rv.adapter = adapter
@@ -40,6 +44,16 @@ class ItemsListFragment : Fragment(R.layout.fragment_items_list) {
             findNavController().navigate(R.id.action_itemsListFragment_to_addItemFragment)
         }
 
+        loadItems()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // ✅ אם חזרת מ-AddItem, זה ירענן ויראה את הפריט החדש
+        loadItems()
+    }
+
+    private fun loadItems() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId == null) {
             tvEmpty.visibility = View.VISIBLE
@@ -61,5 +75,3 @@ class ItemsListFragment : Fragment(R.layout.fragment_items_list) {
         }
     }
 }
-
-

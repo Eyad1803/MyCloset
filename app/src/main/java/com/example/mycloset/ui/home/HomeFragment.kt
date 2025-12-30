@@ -15,6 +15,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         val btnGoClosets = view.findViewById<Button>(R.id.btnGoClosets)
         val btnGoOutfits = view.findViewById<Button>(R.id.btnGoOutfits)
+        val btnAddItem = view.findViewById<Button>(R.id.btnAddItem)
         val btnMyItems = view.findViewById<Button>(R.id.btnMyItems)
         val btnLogout = view.findViewById<Button>(R.id.btnLogout)
 
@@ -24,6 +25,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         btnGoOutfits.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_outfitListFragment)
+        }
+
+        btnAddItem.setOnClickListener {
+            findNavController().navigate(R.id.action_homeFragment_to_addItemFragment)
         }
 
         btnMyItems.setOnClickListener {
@@ -36,4 +41,3 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 }
-

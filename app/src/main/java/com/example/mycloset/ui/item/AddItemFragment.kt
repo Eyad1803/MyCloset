@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -13,13 +14,14 @@ import com.example.mycloset.data.model.ClosetItem
 import com.example.mycloset.data.repository.ItemsRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
+import java.io.File
 
 class AddItemFragment : Fragment(R.layout.fragment_add_item) {
 
     private val repo = ItemsRepository()
     private var selectedImageUri: Uri? = null
 
-    // בחירת תמונה מהגלריה
+    // ✅ גלריה
     private val pickImageLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri != null) {
@@ -28,10 +30,19 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
             }
         }
 
+    // ✅ מצלמה (שומר לקובץ ואז יש Uri אמיתי ל-Storage)
+    private var cameraTempUri: Uri? = null
+    private val takePhotoLauncher =
+        registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+            if (success) {
+                selectedImageUri = cameraTempUri
+                view?.findViewById<ImageView>(R.id.imgItem)?.setImageURI(cameraTempUri)
+            }
+        }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // בדיקת משתמש מחובר
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId == null) {
             Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show()
@@ -39,8 +50,8 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
             return
         }
 
-        // חיבור רכיבי UI
         val imgItem = view.findViewById<ImageView>(R.id.imgItem)
+        val btnTakePhoto = view.findViewById<Button>(R.id.btnTakePhoto)
         val btnPickImage = view.findViewById<Button>(R.id.btnPickImage)
         val btnSave = view.findViewById<Button>(R.id.btnSave)
         val progress = view.findViewById<ProgressBar>(R.id.progress)
@@ -51,14 +62,14 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         val etSeason = view.findViewById<EditText>(R.id.etSeason)
         val etTags = view.findViewById<EditText>(R.id.etTags)
 
-        // בחירת תמונה
-        btnPickImage.setOnClickListener {
-            pickImageLauncher.launch("image/*")
+        btnPickImage.setOnClickListener { pickImageLauncher.launch("image/*") }
+
+        btnTakePhoto.setOnClickListener {
+            cameraTempUri = createTempImageUri()
+            takePhotoLauncher.launch(cameraTempUri)
         }
 
-        // שמירת פריט
         btnSave.setOnClickListener {
-
             val name = etName.text.toString().trim()
             val type = etType.text.toString().trim()
             val color = etColor.text.toString().trim()
@@ -68,9 +79,8 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
                 .map { it.trim() }
                 .filter { it.isNotEmpty() }
 
-            // ולידציה בסיסית
             if (name.isEmpty() || type.isEmpty()) {
-                Toast.makeText(requireContext(), "Name ו-Type הם שדות חובה", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Name ו-Type חובה", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -79,13 +89,12 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
                     progress.visibility = View.VISIBLE
                     btnSave.isEnabled = false
                     btnPickImage.isEnabled = false
+                    btnTakePhoto.isEnabled = false
 
-                    // העלאת תמונה (אם קיימת)
                     val imageUrl = selectedImageUri?.let { uri ->
                         repo.uploadImage(userId, uri)
                     } ?: ""
 
-                    // יצירת אובייקט פריט
                     val item = ClosetItem(
                         ownerUid = userId,
                         closetId = "default",
@@ -97,30 +106,31 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
                         imageUrl = imageUrl
                     )
 
-                    // 🔥 שמירה ב-Firestore
                     repo.addItem(userId, item)
+                    Toast.makeText(requireContext(), "Item נשמר בהצלחה ✅", Toast.LENGTH_SHORT).show()
 
-                    Toast.makeText(
-                        requireContext(),
-                        "Item נשמר בהצלחה ✅",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    // ✅ חזרה למסך My Items (הצגת אמצע!)
+                    // ✅ חוזרים לרשימת My Items (להצגה!)
                     findNavController().popBackStack()
 
                 } catch (e: Exception) {
-                    Toast.makeText(
-                        requireContext(),
-                        "שגיאה: ${e.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(requireContext(), "שגיאה: ${e.message}", Toast.LENGTH_LONG).show()
                 } finally {
                     progress.visibility = View.GONE
                     btnSave.isEnabled = true
                     btnPickImage.isEnabled = true
+                    btnTakePhoto.isEnabled = true
                 }
             }
         }
+    }
+
+    private fun createTempImageUri(): Uri {
+        val imagesDir = File(requireContext().cacheDir, "images").apply { mkdirs() }
+        val imageFile = File(imagesDir, "camera_${System.currentTimeMillis()}.jpg")
+        return FileProvider.getUriForFile(
+            requireContext(),
+            "${requireContext().packageName}.fileprovider",
+            imageFile
+        )
     }
 }

@@ -1,60 +1,62 @@
 package com.example.mycloset.ui.outfit
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import android.widget.ProgressBar
+import android.widget.TextView
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.mycloset.R
+import com.example.mycloset.data.repository.OutfitsRepository
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class OutfitListFragment : Fragment(R.layout.fragment_outfit_list) {
 
-/**
- * A simple [Fragment] subclass.
- * Use the [OutfitListFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class OutfitListFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private val repo = OutfitsRepository()
+    private val adapter = OutfitsAdapter { outfit ->
+        Toast.makeText(requireContext(), "Clicked: ${outfit.name}", Toast.LENGTH_SHORT).show()
+        // בהמשך אפשר OutfitDetails
+    }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val rv = view.findViewById<RecyclerView>(R.id.rvOutfits)
+        val progress = view.findViewById<ProgressBar>(R.id.progressOutfits)
+        val tvEmpty = view.findViewById<TextView>(R.id.tvEmptyOutfits)
+        val fab = view.findViewById<FloatingActionButton>(R.id.fabCreateOutfit)
+
+        rv.layoutManager = LinearLayoutManager(requireContext())
+        rv.adapter = adapter
+
+        fab.setOnClickListener {
+            findNavController().navigate(R.id.action_outfitListFragment_to_createOutfitFragment)
         }
-    }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_outfit_list, container, false)
-    }
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if (userId == null) {
+            Toast.makeText(requireContext(), "Please login first", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_global_loginFragment)
+            return
+        }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment OutfitListFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            OutfitListFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+        lifecycleScope.launch {
+            try {
+                progress.visibility = View.VISIBLE
+                val outfits = repo.getMyOutfits(userId)
+                adapter.submitList(outfits)
+                tvEmpty.visibility = if (outfits.isEmpty()) View.VISIBLE else View.GONE
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
+            } finally {
+                progress.visibility = View.GONE
             }
+        }
     }
 }

@@ -79,10 +79,23 @@
             android:id="@+id/action_homeFragment_to_shareOutfitFragment"
             app:destination="@id/shareOutfitFragment" />
 
-        <!-- ✅ זה הניווט החדש לרשימת הפריטים -->
+        <!--  הניווט  לרשימת הפריטים -->
         <action
             android:id="@+id/action_homeFragment_to_itemsListFragment"
             app:destination="@id/itemsListFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_addItemFragment"
+            app:destination="@id/addItemFragment" />
+        <action
+            android:id="@+id/action_closetListFragment_to_itemsListFragment"
+            app:destination="@id/itemsListFragment" />
+
+        <action
+            android:id="@+id/action_closetListFragment_to_addItemFragment"
+            app:destination="@id/addItemFragment" />
+
+
+
 
     </fragment>
 
@@ -174,10 +187,8 @@
 
     <!-- ================= OUTFIT ================= -->
 
-    <fragment
-        android:id="@+id/outfitListFragment"
-        android:name="com.example.mycloset.ui.outfit.OutfitListFragment"
-        android:label="Outfits" />
+
+
 
     <fragment
         android:id="@+id/profileFragment"
@@ -207,6 +218,17 @@
         android:id="@+id/createOutfitFragment"
         android:name="com.example.mycloset.ui.outfit.CreateOutfitFragment"
         android:label="Create Outfit" />
+    <fragment
+        android:id="@+id/outfitListFragment"
+        android:name="com.example.mycloset.ui.outfit.OutfitListFragment"
+        android:label="Outfits">
+
+        <action
+            android:id="@+id/action_outfitListFragment_to_createOutfitFragment"
+            app:destination="@id/createOutfitFragment" />
+    </fragment>
+
+
 
 
 </navigation>

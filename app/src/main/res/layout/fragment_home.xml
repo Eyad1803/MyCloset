@@ -43,14 +43,27 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="12dp"/>
 
+    <!-- ✅ חדש: קיצור דרך לתהליך המרכזי -->
+    <Button
+        android:id="@+id/btnAddItem"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Add Item"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#D81B60"
+        app:layout_constraintTop_toBottomOf="@id/btnGoOutfits"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
+
     <Button
         android:id="@+id/btnMyItems"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="My Items"
         android:textColor="#FFFFFF"
-        android:backgroundTint="#D81B60"
-        app:layout_constraintTop_toBottomOf="@id/btnGoOutfits"
+        android:backgroundTint="#EC407A"
+        app:layout_constraintTop_toBottomOf="@id/btnAddItem"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="12dp"/>
