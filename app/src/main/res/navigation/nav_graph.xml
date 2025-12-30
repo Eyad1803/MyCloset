@@ -3,6 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
     app:startDestination="@id/loginFragment">
+    <!-- ✅ GLOBAL ACTION -->
+    <action
+        android:id="@+id/action_global_loginFragment"
+        app:destination="@id/loginFragment" />
 
     <!-- ================= AUTH ================= -->
 
@@ -74,6 +78,25 @@
         <action
             android:id="@+id/action_homeFragment_to_shareOutfitFragment"
             app:destination="@id/shareOutfitFragment" />
+
+        <!--  הניווט  לרשימת הפריטים -->
+        <action
+            android:id="@+id/action_homeFragment_to_itemsListFragment"
+            app:destination="@id/itemsListFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_addItemFragment"
+            app:destination="@id/addItemFragment" />
+        <action
+            android:id="@+id/action_closetListFragment_to_itemsListFragment"
+            app:destination="@id/itemsListFragment" />
+
+        <action
+            android:id="@+id/action_closetListFragment_to_addItemFragment"
+            app:destination="@id/addItemFragment" />
+
+
+
+
     </fragment>
 
     <!-- ================= CLOSET ================= -->
@@ -116,7 +139,6 @@
         android:name="com.example.mycloset.ui.closet.CreateClosetFragment"
         android:label="Create Closet" />
 
-    <!-- אם את לא משתמשת במסך הזה כרגע - אפשר להשאיר/למחוק, לא חובה -->
     <fragment
         android:id="@+id/closetFragment"
         android:name="com.example.mycloset.ui.closet.ClosetFragment"
@@ -130,6 +152,16 @@
         android:label="Add Item" />
 
     <fragment
+        android:id="@+id/itemDetailsFragment"
+        android:name="com.example.mycloset.ui.item.ItemDetailsFragment"
+        android:label="Item Details">
+        <argument
+            android:name="itemId"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
+
+    <fragment
         android:id="@+id/editItemFragment"
         android:name="com.example.mycloset.ui.item.EditItemFragment"
         android:label="Edit Item">
@@ -138,68 +170,30 @@
             app:argType="string"
             android:defaultValue="" />
     </fragment>
-
     <fragment
-        android:id="@+id/itemDetailsFragment"
-        android:name="com.example.mycloset.ui.item.ItemDetailsFragment"
-        android:label="Item Details">
-        <argument
-            android:name="itemId"
-            app:argType="string"
-            android:defaultValue="" />
+        android:id="@+id/itemsListFragment"
+        android:name="com.example.mycloset.ui.item.ItemsListFragment"
+        android:label="My Items">
 
         <action
-            android:id="@+id/action_itemDetailsFragment_to_editItemFragment"
-            app:destination="@id/editItemFragment" />
+            android:id="@+id/action_itemsListFragment_to_addItemFragment"
+            app:destination="@id/addItemFragment" />
     </fragment>
+
+
+
+
+
 
     <!-- ================= OUTFIT ================= -->
 
-    <fragment
-        android:id="@+id/outfitListFragment"
-        android:name="com.example.mycloset.ui.outfit.OutfitListFragment"
-        android:label="Outfits">
 
-        <action
-            android:id="@+id/action_outfitListFragment_to_outfitDetailsFragment"
-            app:destination="@id/outfitDetailsFragment" />
 
-        <action
-            android:id="@+id/action_outfitListFragment_to_createOutfitFragment"
-            app:destination="@id/createOutfitFragment" />
-
-        <action
-            android:id="@+id/action_outfitListFragment_to_shareOutfitFragment"
-            app:destination="@id/shareOutfitFragment" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/createOutfitFragment"
-        android:name="com.example.mycloset.ui.outfit.CreateOutfitFragment"
-        android:label="Create Outfit" />
-
-    <fragment
-        android:id="@+id/outfitDetailsFragment"
-        android:name="com.example.mycloset.ui.outfit.OutfitDetailsFragment"
-        android:label="Outfit Details">
-        <argument
-            android:name="outfitId"
-            app:argType="string"
-            android:defaultValue="" />
-
-        <action
-            android:id="@+id/action_outfitDetailsFragment_to_shareOutfitFragment"
-            app:destination="@id/shareOutfitFragment" />
-    </fragment>
-
-    <!-- ================= PROFILE ================= -->
 
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.example.mycloset.ui.profile.ProfileFragment"
         android:label="Profile" />
-
-    <!-- ================= SEARCH / SETTINGS ================= -->
 
     <fragment
         android:id="@+id/searchFragment"
@@ -211,21 +205,32 @@
         android:name="com.example.mycloset.ui.settings.SettingsFragment"
         android:label="Settings" />
 
-    <!-- ================= SHARE & SUGGESTIONS ================= -->
-
     <fragment
         android:id="@+id/shareOutfitFragment"
         android:name="com.example.mycloset.ui.share.ShareOutfitFragment"
-        android:label="Share Outfit">
-        <argument
-            android:name="outfitId"
-            app:argType="string"
-            android:defaultValue="" />
-    </fragment>
+        android:label="Share Outfit" />
 
     <fragment
         android:id="@+id/suggestionsInboxFragment"
         android:name="com.example.mycloset.ui.suggestions.SuggestionsInboxFragment"
         android:label="Suggestions Inbox" />
+    <fragment
+        android:id="@+id/createOutfitFragment"
+        android:name="com.example.mycloset.ui.outfit.CreateOutfitFragment"
+        android:label="Create Outfit" />
+    <fragment
+        android:id="@+id/outfitListFragment"
+        android:name="com.example.mycloset.ui.outfit.OutfitListFragment"
+        android:label="Outfits">
+
+        <action
+            android:id="@+id/action_outfitListFragment_to_createOutfitFragment"
+            app:destination="@id/createOutfitFragment" />
+    </fragment>
+
+
+
 
 </navigation>
+
+
