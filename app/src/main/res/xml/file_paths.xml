@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- קבצים זמניים ב-cache (מעולה לצילום) -->
     <cache-path
-        name="cache_images"
-        path="images/" />
+        name="cache"
+        path="." />
 
-    <files-path
-        name="files_images"
-        path="images/" />
+    <!-- קבצים בתיקייה פרטית של האפליקציה -->
+    <external-files-path
+        name="external_files"
+        path="." />
 
 </paths>

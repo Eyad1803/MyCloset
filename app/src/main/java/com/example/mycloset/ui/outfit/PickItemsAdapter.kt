@@ -3,61 +3,78 @@ package com.example.mycloset.ui.outfit
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.example.mycloset.R
 import com.example.mycloset.data.model.ClosetItem
 
 class PickItemsAdapter(
-    private val onToggle: (ClosetItem) -> Unit
-) : RecyclerView.Adapter<PickItemsAdapter.VH>() {
+    private val onSelectionChanged: (() -> Unit)? = null
+) : ListAdapter<ClosetItem, PickItemsAdapter.VH>(DIFF) {
 
-    private val items = mutableListOf<ClosetItem>()
-    private val selectedIds = mutableSetOf<String>()
+    private val selectedIds = linkedSetOf<String>()
 
-    fun submitList(newItems: List<ClosetItem>) {
-        items.clear()
-        items.addAll(newItems)
-        notifyDataSetChanged()
+    companion object {
+        private val DIFF = object : DiffUtil.ItemCallback<ClosetItem>() {
+            override fun areItemsTheSame(oldItem: ClosetItem, newItem: ClosetItem): Boolean =
+                oldItem.id == newItem.id
+
+            override fun areContentsTheSame(oldItem: ClosetItem, newItem: ClosetItem): Boolean =
+                oldItem == newItem
+        }
     }
 
     fun getSelectedIds(): List<String> = selectedIds.toList()
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.item_closet, parent, false)
-        return VH(v)
+    fun setSelectedIds(ids: Set<String>) {
+        selectedIds.clear()
+        selectedIds.addAll(ids)
+        notifyDataSetChanged()
+        onSelectionChanged?.invoke()
     }
 
-    override fun getItemCount() = items.size
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_pick_simple, parent, false)
+        return VH(view)
+    }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        holder.bind(items[position])
+        holder.bind(getItem(position))
     }
 
     inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val tvName = itemView.findViewById<TextView>(R.id.tvItemName)
-        private val tvMeta = itemView.findViewById<TextView>(R.id.tvItemMeta)
-        private val img = itemView.findViewById<ImageView>(R.id.ivItem)
+
+        private val tvPickItem: TextView =
+            itemView.findViewById(R.id.tvPickItem)
 
         fun bind(item: ClosetItem) {
-            tvName.text = item.name
-            tvMeta.text = "${item.type} • ${item.color} • ${item.season}"
+            val isSelected = selectedIds.contains(item.id)
 
-            if (item.imageUrl.isNotBlank()) {
-                Glide.with(itemView).load(item.imageUrl).into(img)
-            } else {
-                img.setImageResource(R.drawable.ic_launcher_foreground)
-            }
+            tvPickItem.text =
+                "${item.name} (${item.type}, ${item.color}, ${item.season})"
 
-            // סימון ויזואלי פשוט
-            itemView.alpha = if (selectedIds.contains(item.id)) 0.6f else 1.0f
+            itemView.alpha = if (isSelected) 0.6f else 1.0f
+            itemView.setBackgroundResource(
+                if (isSelected) R.drawable.bg_pick_selected
+                else R.drawable.bg_pick_normal
+            )
 
             itemView.setOnClickListener {
-                if (selectedIds.contains(item.id)) selectedIds.remove(item.id) else selectedIds.add(item.id)
-                notifyItemChanged(bindingAdapterPosition)
-                onToggle(item)
+                if (selectedIds.contains(item.id)) {
+                    selectedIds.remove(item.id)
+                } else {
+                    selectedIds.add(item.id)
+                }
+
+                val pos = adapterPosition
+                if (pos != RecyclerView.NO_POSITION) {
+                    notifyItemChanged(pos)
+                }
+
+                onSelectionChanged?.invoke()
             }
         }
     }

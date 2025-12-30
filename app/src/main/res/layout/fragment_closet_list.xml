@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp"
+    android:padding="16dp"
     android:background="#FFF1F6">
 
     <TextView
@@ -19,40 +19,23 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <TextView
-        android:id="@+id/tvInfo"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvClosets"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text=" Here you can manage multiple closets."
-        android:textColor="#666666"
-        android:textSize="14sp"
-        android:layout_marginTop="10dp"
+        android:layout_height="0dp"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
 
-    <Button
-        android:id="@+id/btnGoMyItems"
-        android:layout_width="0dp"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddCloset"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Go to My Items"
-        android:textColor="#FFFFFF"
-        android:backgroundTint="#EC407A"
-        android:layout_marginTop="18dp"
-        app:layout_constraintTop_toBottomOf="@id/tvInfo"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <Button
-        android:id="@+id/btnGoAddItem"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Add Item"
-        android:textColor="#FFFFFF"
-        android:backgroundTint="#D81B60"
-        android:layout_marginTop="12dp"
-        app:layout_constraintTop_toBottomOf="@id/btnGoMyItems"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
+        android:contentDescription="Add Closet"
+        app:srcCompat="@android:drawable/ic_input_add"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="16dp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
