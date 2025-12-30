@@ -7,3 +7,4 @@ data class Outfit(
     val itemIds: List<String> = emptyList(),
     val createdAt: Long = System.currentTimeMillis()
 )
+

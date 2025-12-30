@@ -19,9 +19,11 @@ import java.io.File
 class AddItemFragment : Fragment(R.layout.fragment_add_item) {
 
     private val repo = ItemsRepository()
-    private var selectedImageUri: Uri? = null
 
-    // ✅ גלריה
+    private var selectedImageUri: Uri? = null
+    private var cameraImageUri: Uri? = null
+
+    // Gallery
     private val pickImageLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri != null) {
@@ -30,13 +32,14 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
             }
         }
 
-    // ✅ מצלמה (שומר לקובץ ואז יש Uri אמיתי ל-Storage)
-    private var cameraTempUri: Uri? = null
-    private val takePhotoLauncher =
+    // Camera
+    private val takePictureLauncher =
         registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
             if (success) {
-                selectedImageUri = cameraTempUri
-                view?.findViewById<ImageView>(R.id.imgItem)?.setImageURI(cameraTempUri)
+                selectedImageUri = cameraImageUri
+                view?.findViewById<ImageView>(R.id.imgItem)?.setImageURI(cameraImageUri)
+            } else {
+                Toast.makeText(requireContext(), "taking picture canceled", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -51,8 +54,9 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         }
 
         val imgItem = view.findViewById<ImageView>(R.id.imgItem)
-        val btnTakePhoto = view.findViewById<Button>(R.id.btnTakePhoto)
-        val btnPickImage = view.findViewById<Button>(R.id.btnPickImage)
+
+        val btnCamera = view.findViewById<Button>(R.id.btnTakePhoto)      //   camera button
+        val btnGallery = view.findViewById<Button>(R.id.btnPickImage)     // gallary
         val btnSave = view.findViewById<Button>(R.id.btnSave)
         val progress = view.findViewById<ProgressBar>(R.id.progress)
 
@@ -62,13 +66,18 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         val etSeason = view.findViewById<EditText>(R.id.etSeason)
         val etTags = view.findViewById<EditText>(R.id.etTags)
 
-        btnPickImage.setOnClickListener { pickImageLauncher.launch("image/*") }
-
-        btnTakePhoto.setOnClickListener {
-            cameraTempUri = createTempImageUri()
-            takePhotoLauncher.launch(cameraTempUri)
+        // camera
+        btnCamera.setOnClickListener {
+            cameraImageUri = createImageUri()
+            takePictureLauncher.launch(cameraImageUri)
         }
 
+        // gallary
+        btnGallery.setOnClickListener {
+            pickImageLauncher.launch("image/*")
+        }
+
+        // save
         btnSave.setOnClickListener {
             val name = etName.text.toString().trim()
             val type = etType.text.toString().trim()
@@ -80,7 +89,7 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
                 .filter { it.isNotEmpty() }
 
             if (name.isEmpty() || type.isEmpty()) {
-                Toast.makeText(requireContext(), "Name ו-Type חובה", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Name ו-Type mandatory", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -88,11 +97,12 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
                 try {
                     progress.visibility = View.VISIBLE
                     btnSave.isEnabled = false
-                    btnPickImage.isEnabled = false
-                    btnTakePhoto.isEnabled = false
+                    btnCamera.isEnabled = false
+                    btnGallery.isEnabled = false
 
+                    //       if there is a picture -> storage, otherwise ""
                     val imageUrl = selectedImageUri?.let { uri ->
-                        repo.uploadImage(userId, uri)
+                        repo.uploadImage(userId, uri)   // Storage
                     } ?: ""
 
                     val item = ClosetItem(
@@ -106,31 +116,32 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
                         imageUrl = imageUrl
                     )
 
-                    repo.addItem(userId, item)
-                    Toast.makeText(requireContext(), "Item נשמר בהצלחה ✅", Toast.LENGTH_SHORT).show()
+                    repo.addItem(userId, item)         // Firestore
 
-                    // ✅ חוזרים לרשימת My Items (להצגה!)
-                    findNavController().popBackStack()
+                    Toast.makeText(requireContext(), "Item saved successfully ", Toast.LENGTH_SHORT).show()
+                    findNavController().popBackStack() // return to item list
 
                 } catch (e: Exception) {
-                    Toast.makeText(requireContext(), "שגיאה: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(requireContext(), "error: ${e.message}", Toast.LENGTH_LONG).show()
                 } finally {
                     progress.visibility = View.GONE
                     btnSave.isEnabled = true
-                    btnPickImage.isEnabled = true
-                    btnTakePhoto.isEnabled = true
+                    btnCamera.isEnabled = true
+                    btnGallery.isEnabled = true
                 }
             }
         }
     }
 
-    private fun createTempImageUri(): Uri {
-        val imagesDir = File(requireContext().cacheDir, "images").apply { mkdirs() }
-        val imageFile = File(imagesDir, "camera_${System.currentTimeMillis()}.jpg")
+    private fun createImageUri(): Uri {
+        val imagesDir = File(requireContext().cacheDir, "images")
+        imagesDir.mkdirs()
+        val file = File(imagesDir, "camera_${System.currentTimeMillis()}.jpg")
+
         return FileProvider.getUriForFile(
             requireContext(),
-            "${requireContext().packageName}.fileprovider",
-            imageFile
+            "${requireContext().packageName}.provider",
+            file
         )
     }
 }
