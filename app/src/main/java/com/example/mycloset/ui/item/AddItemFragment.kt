@@ -1,60 +1,126 @@
 package com.example.mycloset.ui.item
 
+import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.example.mycloset.R
+import com.example.mycloset.data.model.ClosetItem
+import com.example.mycloset.data.repository.ItemsRepository
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class AddItemFragment : Fragment(R.layout.fragment_add_item) {
 
-/**
- * A simple [Fragment] subclass.
- * Use the [AddItemFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class AddItemFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private val repo = ItemsRepository()
+    private var selectedImageUri: Uri? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    // בחירת תמונה מהגלריה
+    private val pickImageLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            if (uri != null) {
+                selectedImageUri = uri
+                view?.findViewById<ImageView>(R.id.imgItem)?.setImageURI(uri)
+            }
         }
-    }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add_item, container, false)
-    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment AddItemFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            AddItemFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+        // בדיקת משתמש מחובר
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if (userId == null) {
+            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_global_loginFragment)
+            return
+        }
+
+        // חיבור רכיבי UI
+        val imgItem = view.findViewById<ImageView>(R.id.imgItem)
+        val btnPickImage = view.findViewById<Button>(R.id.btnPickImage)
+        val btnSave = view.findViewById<Button>(R.id.btnSave)
+        val progress = view.findViewById<ProgressBar>(R.id.progress)
+
+        val etName = view.findViewById<EditText>(R.id.etName)
+        val etType = view.findViewById<EditText>(R.id.etType)
+        val etColor = view.findViewById<EditText>(R.id.etColor)
+        val etSeason = view.findViewById<EditText>(R.id.etSeason)
+        val etTags = view.findViewById<EditText>(R.id.etTags)
+
+        // בחירת תמונה
+        btnPickImage.setOnClickListener {
+            pickImageLauncher.launch("image/*")
+        }
+
+        // שמירת פריט
+        btnSave.setOnClickListener {
+
+            val name = etName.text.toString().trim()
+            val type = etType.text.toString().trim()
+            val color = etColor.text.toString().trim()
+            val season = etSeason.text.toString().trim()
+            val tags = etTags.text.toString()
+                .split(",")
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+
+            // ולידציה בסיסית
+            if (name.isEmpty() || type.isEmpty()) {
+                Toast.makeText(requireContext(), "Name ו-Type הם שדות חובה", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            lifecycleScope.launch {
+                try {
+                    progress.visibility = View.VISIBLE
+                    btnSave.isEnabled = false
+                    btnPickImage.isEnabled = false
+
+                    // העלאת תמונה (אם קיימת)
+                    val imageUrl = selectedImageUri?.let { uri ->
+                        repo.uploadImage(userId, uri)
+                    } ?: ""
+
+                    // יצירת אובייקט פריט
+                    val item = ClosetItem(
+                        ownerUid = userId,
+                        closetId = "default",
+                        name = name,
+                        type = type,
+                        color = color,
+                        season = season,
+                        tags = tags,
+                        imageUrl = imageUrl
+                    )
+
+                    // 🔥 שמירה ב-Firestore
+                    repo.addItem(userId, item)
+
+                    Toast.makeText(
+                        requireContext(),
+                        "Item נשמר בהצלחה ✅",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    // ✅ חזרה למסך My Items (הצגת אמצע!)
+                    findNavController().popBackStack()
+
+                } catch (e: Exception) {
+                    Toast.makeText(
+                        requireContext(),
+                        "שגיאה: ${e.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } finally {
+                    progress.visibility = View.GONE
+                    btnSave.isEnabled = true
+                    btnPickImage.isEnabled = true
                 }
             }
+        }
     }
 }
